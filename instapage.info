@@ -1,0 +1,3 @@
+name = Instapage
+description = Implements Instapage landing pages as menu callback.
+core = 7.x
