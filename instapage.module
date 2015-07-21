@@ -217,8 +217,8 @@ function instapage_pages_form($form_state) {
       $form['#prefix'] = '<p>' . t('The list of pages is empty. Add a page on Instapage first.') . '</p>';
     }
     else {
-      $form['#prefix'] = '<p>' . t('This is the list of all pages on Instapage.') . '</p>';
-      $form['#prefix'] .= '<p>' . t('Type the path on which you want to show Instapage page. Enter %front for front page or leave empty to ignore certain page.', array('%front' => '<front>')) . '</p>';
+      $form['#prefix'] = '<p>' . t('This is the list of all pages on Instapage. Type the path on which you want to show Instapage page.') . '</p>';
+      $form['#prefix'] .= '<p>' . t('If you want to show Instapage as a front page, choose a path (for example: front) and then change default front page path <a href="@link">here</a>.', array('@link' => url('admin/config/system/site-information'))) . '</p>';
       $pages = variable_get('instapage_pages', array());
       $form['instapage_pages'] = array(
         '#tree' => TRUE
@@ -278,19 +278,11 @@ function instapage_pages_form_submit($form, &$form_state) {
       if ($path != '') {
         $pages[$instapage_id] = $path;
 
-        // Change placeholder for front page with blank path.
-        if ($path == '<front>'){
-          $path = '';
-        }
-        else{
-          $path = "/" . $path;
-        }
-
         // Let Instapage know about the path.
         $instapage_user_id = variable_get('instapage_user_id', false);
         $plugin_hash = variable_get('instapage_plugin_hash', false);
         global $base_url;
-        $url = $base_url . $path;
+        $url = $base_url . "/" . $path;
 
         $data = array(
           'user_id' => $instapage_user_id,
@@ -298,6 +290,7 @@ function instapage_pages_form_submit($form, &$form_state) {
           'page_id' => $instapage_id,
           'url' => str_replace('http://', '', $url)
         );
+        
         instapage_api_call('update-page', $data);
       }
     }
