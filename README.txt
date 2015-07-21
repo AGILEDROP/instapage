@@ -10,7 +10,7 @@ Publish pages from Instapage on a path inside your Drupal website.
 
 Requirements
 ============
-Instapage user account and that you get on their website <https://www.instapage.com>.
+Instapage user account that you get on their website <https://www.instapage.com>.
 
 
 Installation
@@ -34,3 +34,7 @@ on Instapage administration pages.
 
 After you get a list of all the pages you put in the path for each of them
 and save the form. Your Instapage page will be available on the selected path.
+
+If you want to add Instapage page as a front page on your site, choose a path
+(for example: front) and than set Default front page path to the same value
+at admin/config/system/site-information.
