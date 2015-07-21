@@ -115,7 +115,8 @@ function instapage_admin_settings_form($form_state) {
     return $form;
   }
 
-    $form['info']['#markup'] = t('You are logged in as @user', array('@user' => $result->user));
+    $form['info']['#markup'] = t('You are logged in as @user.', array('@user' => $result->user));
+    $form['info']['#markup'] .= '<p>' . t('Administer your pages <a href="@link">here</a>.', array('@link' => url('admin/structure/instapage'))) . '</p>';
     $form['#submit'][] = 'instapage_admin_settings_form_disconnect_submit';
     $form['actions']['#type'] = 'actions';
     $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Disconnect'));
@@ -200,7 +201,8 @@ function instapage_pages_form($form_state) {
   $plugin_hash = variable_get('instapage_plugin_hash', false);
 
   if (!$instapage_user_id && !$plugin_hash) {
-    $form['notice']['#markup'] = t('You don\' have the Instapage setup yet.');
+    $form['notice']['#markup'] = '<p>' . t('You don\'t have the Instapage account setup yet.') . '</p>';
+    $form['notice']['#markup'] .= '<p>' . t('Please connect your account <a href="@link">here</a>.', array('@link' => url('admin/config/services/instapage'))) . '</p>';
     return $form;
   }
 
@@ -211,17 +213,26 @@ function instapage_pages_form($form_state) {
   $result = instapage_api_call('my-pages/drupal', $data);
 
   if (isset($result->success)) {
-    $pages = variable_get('instapage_pages', array());
-    $form['instapage_pages'] = array(
-      '#tree' => TRUE
-    );
-    foreach ($result->data->pages as $page) {
-      $form['instapage_pages'][$page->id] = array(
-        '#type' => 'textfield',
-        '#title' => $page->title,
-        '#field_prefix' => $base_url . '/',
-        '#default_value' => isset($pages[$page->id]) ? $pages[$page->id] : '',
+    if (empty($result->data->pages)){
+      $form['#prefix'] = '<p>' . t('The list of pages is empty. Add a page on Instapage first.') . '</p>';
+    }
+    else {
+      $form['#prefix'] = '<p>' . t('This is the list of all pages on Instapage.') . '</p>';
+      $form['#prefix'] .= '<p>' . t('Type the path on which you want to show Instapage page. Enter %front for front page or leave empty to ignore certain page.', array('%front' => '<front>')) . '</p>';
+      $pages = variable_get('instapage_pages', array());
+      $form['instapage_pages'] = array(
+        '#tree' => TRUE
       );
+      foreach ($result->data->pages as $page) {
+        $form['instapage_pages'][$page->id] = array(
+          '#type' => 'textfield',
+          '#title' => $page->title,
+          '#field_prefix' => $base_url . '/',
+          '#default_value' => isset($pages[$page->id]) ? $pages[$page->id] : '',
+        );
+      }
+      $form['actions']['#type'] = 'actions';
+      $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save'));
     }
   }
 
@@ -264,27 +275,36 @@ function instapage_pages_form_submit($form, &$form_state) {
   $pages = array();
   if (isset($form_state['values']['instapage_pages'])) {
     foreach ($form_state['values']['instapage_pages'] as $instapage_id => $path) {
-      $pages[$instapage_id] = $path;
+      if ($path != '') {
+        $pages[$instapage_id] = $path;
 
-      // Let Instapage know about the path.
-      $instapage_user_id = variable_get('instapage_user_id', false);
-      $plugin_hash = variable_get('instapage_plugin_hash', false);
-      global $base_url;
-      $url = $base_url . "/" . $path;
+        // Change placeholder for front page with blank path.
+        if ($path == '<front>'){
+          $path = '';
+        }
+        else{
+          $path = "/" . $path;
+        }
 
-      $data = array(
-        'user_id' => $instapage_user_id,
-        'plugin_hash' => $plugin_hash,
-        'page_id' => $instapage_id,
-        'url' => str_replace('http://', '', $url)
-      );
+        // Let Instapage know about the path.
+        $instapage_user_id = variable_get('instapage_user_id', false);
+        $plugin_hash = variable_get('instapage_plugin_hash', false);
+        global $base_url;
+        $url = $base_url . $path;
 
-      instapage_api_call('update-page', $data);
+        $data = array(
+          'user_id' => $instapage_user_id,
+          'plugin_hash' => $plugin_hash,
+          'page_id' => $instapage_id,
+          'url' => str_replace('http://', '', $url)
+        );
+        instapage_api_call('update-page', $data);
+      }
     }
   }
   variable_set('instapage_pages', $pages);
   menu_rebuild();
-  drupal_set_message(t('All pages have been saved'));
+  drupal_set_message(t('All pages have been saved.'));
 }
 
 /**
