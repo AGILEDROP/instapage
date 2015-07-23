@@ -93,27 +93,26 @@ function instapage_admin_settings_form($form_state) {
       'plugin_hash' => $plugin_hash,
     );
     $result = instapage_api_call('get-user', $data, 'GET');
-  
-  if ( isset( $result->error ) && $result->error == 1 )
-  {
-    form_set_error('form', t('Error from Instapage API: @instapage_msg', array('@instapage_msg' => $result->error_message)));
-    $form['instapage_user_email'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Email'),
-      '#required' => TRUE,
-    );
 
-    $form['instapage_user_password'] = array(
-      '#type' => 'password',
-      '#title' => t('Password'),
-      '#required' => TRUE,
-    );
-    $form['#validate'][] = 'instapage_admin_settings_form_login_validate';
-    $form['#submit'][] = 'instapage_admin_settings_form_login_submit';
-    $form['actions']['#type'] = 'actions';
-    $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save configuration'));
-    return $form;
-  }
+    if ( isset( $result->error ) && $result->error == 1 ) {
+      form_set_error('form', t('Error from Instapage API: @instapage_msg', array('@instapage_msg' => $result->error_message)));
+      $form['instapage_user_email'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Email'),
+        '#required' => TRUE,
+      );
+
+      $form['instapage_user_password'] = array(
+        '#type' => 'password',
+        '#title' => t('Password'),
+        '#required' => TRUE,
+      );
+      $form['#validate'][] = 'instapage_admin_settings_form_login_validate';
+      $form['#submit'][] = 'instapage_admin_settings_form_login_submit';
+      $form['actions']['#type'] = 'actions';
+      $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save configuration'));
+      return $form;
+    }
 
     $form['info']['#markup'] = t('You are logged in as @user.', array('@user' => $result->user));
     $form['info']['#markup'] .= '<p>' . t('Administer your pages <a href="@link">here</a>.', array('@link' => url('admin/structure/instapage'))) . '</p>';
@@ -282,7 +281,7 @@ function instapage_pages_form_submit($form, &$form_state) {
         $instapage_user_id = variable_get('instapage_user_id', false);
         $plugin_hash = variable_get('instapage_plugin_hash', false);
         global $base_url;
-        $url = $base_url . "/" . $path;
+        $url = $base_url . '/' . $path;
 
         $data = array(
           'user_id' => $instapage_user_id,
@@ -305,19 +304,15 @@ function instapage_pages_form_submit($form, &$form_state) {
  */
 function instapage_api_call($service, $data, $method = 'POST') {
   $url = INSTAPAGE_ENDPOINT .'/ajax/services/' . $service . '/';
-  
-  if ( $method == 'GET' && !empty( $data ) )
-  {
-  foreach( $data as $param_key => $param_value )
-  {
-    $params[] = $param_key . '=' . $param_value;
-  }
-  
-  if ( !empty( $params ) )
-  {
-    $url .= '?' . implode( '&', $params );
-  }
-  
+
+  if ($method == 'GET' && !empty( $data )) {
+    foreach($data as $param_key => $param_value) {
+      $params[] = $param_key . '=' . $param_value;
+    }
+
+    if (!empty( $params )) {
+      $url .= '?' . implode( '&', $params );
+    }
   }
 
   $request_body = array(

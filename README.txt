@@ -10,7 +10,7 @@ Publish pages from Instapage on a path inside your Drupal website.
 
 Requirements
 ============
-Instapage user account that you get on their website <https://www.instapage.com>.
+Instapage user account that you can get on their website <https://www.instapage.com>.
 
 
 Installation
