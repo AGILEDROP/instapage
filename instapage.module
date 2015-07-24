@@ -223,11 +223,13 @@ function instapage_pages_form($form_state) {
         '#tree' => TRUE
       );
       foreach ($result->data->pages as $page) {
+        $page_url = explode( '/', $page->url );
+        $page_url = isset( $page_url[1] ) ? $page_url[1] : '';
         $form['instapage_pages'][$page->id] = array(
           '#type' => 'textfield',
           '#title' => $page->title,
           '#field_prefix' => $base_url . '/',
-          '#default_value' => isset($pages[$page->id]) ? $pages[$page->id] : '',
+          '#default_value' => isset($pages[$page->id]) ? $pages[$page->id] : $page_url,
         );
       }
       $form['actions']['#type'] = 'actions';
